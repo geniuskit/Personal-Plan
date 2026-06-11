@@ -42,7 +42,7 @@
         <span :class="achieveColor">{{ achieveLabel }}</span>
       </div>
       <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
-        <div class="h-full rounded-full transition-all duration-500" :class="barColor" :style="{ width: barWidth }"></div>
+        <div class="h-full rounded-full transition-all duration-500" :class="barColor" :style="{ width: progressPct + '%' }"></div>
       </div>
     </div>
   </div>
@@ -50,26 +50,12 @@
 
 <script setup>
 import { computed } from 'vue'
+import { getAchieveLevel, getProgressPct } from '../lib/parseTarget'
 
 const props = defineProps({ rec: Object })
 
-function parseVal(s) {
-  if (!s) return null
-  return parseFloat(s.replace(/[^0-9.]/g, '')) || null
-}
-
-const actual = computed(() => parseVal(props.rec.actual_result))
-const high = computed(() => parseVal(props.rec.high_target))
-const mid = computed(() => parseVal(props.rec.mid_target))
-const low = computed(() => parseVal(props.rec.low_target))
-
-const achieveLevel = computed(() => {
-  if (actual.value === null) return null
-  if (high.value && actual.value >= high.value) return 'high'
-  if (mid.value && actual.value >= mid.value) return 'mid'
-  if (low.value && actual.value >= low.value) return 'low'
-  return 'miss'
-})
+const achieveLevel = computed(() => getAchieveLevel(props.rec))
+const progressPct = computed(() => getProgressPct(props.rec))
 
 const achieveColor = computed(() => ({
   high: 'text-green-400',
@@ -91,11 +77,4 @@ const achieveLabel = computed(() => ({
   low: '達低標 ✔',
   miss: '未達標 ✗',
 })[achieveLevel.value] || '')
-
-const barWidth = computed(() => {
-  if (actual.value === null) return '0%'
-  const ref = high.value || mid.value || low.value
-  if (!ref) return '100%'
-  return Math.min(100, Math.round((actual.value / ref) * 100)) + '%'
-})
 </script>

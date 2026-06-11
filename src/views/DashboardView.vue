@@ -58,6 +58,7 @@
 import { ref, computed, onMounted } from 'vue'
 import ActivityCard from '../components/ActivityCard.vue'
 import { useRecords } from '../composables/useRecords'
+import { getAchieveLevel } from '../lib/parseTarget'
 
 const { fetchRecord, fetchStreakAndStats } = useRecords()
 
@@ -90,10 +91,8 @@ const completionRate = computed(() => {
   const recs = sortedRecs.value.filter(r => r.can_do)
   if (!recs.length) return 0
   const done = recs.filter(r => {
-    if (!r.actual_result) return false
-    const actual = parseFloat(r.actual_result)
-    const low = parseFloat((r.low_target || '').replace(/[^0-9.]/g, ''))
-    return !isNaN(actual) && !isNaN(low) && actual >= low
+    const level = getAchieveLevel(r)
+    return level && level !== 'miss'
   })
   return Math.round((done.length / recs.length) * 100)
 })

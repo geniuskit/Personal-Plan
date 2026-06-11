@@ -84,6 +84,7 @@ import { ref, computed, onMounted } from 'vue'
 import MiniCalendar from '../components/MiniCalendar.vue'
 import ActivityCard from '../components/ActivityCard.vue'
 import { useRecords } from '../composables/useRecords'
+import { getAchieveLevel } from '../lib/parseTarget'
 
 const { fetchDatesWithRecords, fetchRecord, fetchRecordsByRange } = useRecords()
 
@@ -144,10 +145,8 @@ async function loadMonthStats(year, month) {
       if (!statMap[name]) statMap[name] = { total: 0, achieved: 0 }
       if (rec.can_do) {
         statMap[name].total++
-        const actual = parseFloat(rec.actual_result)
-        const parseT = s => { const v = parseFloat((s || '').replace(/[^0-9.]/g, '')); return isNaN(v) ? null : v }
-        const ref = parseT(rec.low_target) ?? parseT(rec.mid_target) ?? parseT(rec.high_target)
-        if (!isNaN(actual) && ref !== null && actual >= ref) statMap[name].achieved++
+        const level = getAchieveLevel(rec)
+        if (level && level !== 'miss') statMap[name].achieved++
       }
     }
   }
