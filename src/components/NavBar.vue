@@ -21,6 +21,7 @@ const items = [
   { to: '/', icon: '📋', label: '今日' },
   { to: `/edit/${today()}`, icon: '✏️', label: '記錄' },
   { to: '/history', icon: '📅', label: '歷史' },
+  { to: '/learning', icon: '📚', label: '書單' },
   { to: '/settings', icon: '⚙️', label: '設定' },
 ]
 
