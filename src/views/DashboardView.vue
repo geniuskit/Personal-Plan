@@ -41,62 +41,97 @@
 
     <!-- 活動卡片列表 -->
     <div v-else class="space-y-3 mb-5">
-      <ActivityCard
-        v-for="rec in sortedRecs"
-        :key="rec.id"
-        :rec="rec"
-      />
+      <ActivityCard v-for="rec in sortedRecs" :key="rec.id" :rec="rec" />
       <div v-if="record.notes" class="card">
         <div class="label">備註</div>
         <div class="text-slate-300 text-sm whitespace-pre-wrap">{{ record.notes }}</div>
       </div>
     </div>
 
-    <!-- 📚 進行中書單專區 -->
+    <!-- 今日學習 -->
     <div class="mb-4">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold text-slate-300 flex items-center gap-1">
-          📚 進行中
-        </h2>
-        <router-link to="/learning" class="text-blue-400 text-xs hover:underline">管理書單 →</router-link>
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold text-slate-300">🧠 今日學習</h2>
+        <button class="text-blue-400 text-xs hover:text-blue-300" @click="openAdd('學習')">+ 新增</button>
       </div>
-
-      <div v-if="loadingLearning" class="text-slate-500 text-sm text-center py-3">載入中…</div>
-
-      <div v-else-if="!activeItems.length" class="card text-center py-5">
-        <div class="text-slate-500 text-sm mb-2">沒有進行中的項目</div>
-        <router-link to="/learning" class="text-blue-400 text-xs hover:underline">+ 新增書單或課程</router-link>
-      </div>
-
+      <div v-if="!studyEntries.length" class="card py-4 text-center text-slate-500 text-sm">今天還沒有學習記錄</div>
       <div v-else class="space-y-2">
-        <!-- 依類別分組 -->
-        <template v-for="(group, cat) in groupedItems" :key="cat">
-          <div class="text-xs text-slate-500 mt-3 mb-1 first:mt-0">{{ cat }}</div>
-          <div
-            v-for="item in group"
-            :key="item.id"
-            class="card py-3"
-          >
-            <div class="flex justify-between items-start">
-              <div class="flex-1 pr-2">
-                <a v-if="item.url" :href="item.url" target="_blank" class="font-medium text-slate-100 hover:text-blue-400 text-sm">{{ item.title }}</a>
-                <div v-else class="font-medium text-slate-100 text-sm">{{ item.title }}</div>
-              </div>
-              <span v-if="item.total_units" class="text-xs text-blue-400 whitespace-nowrap">
-                {{ progressPct(item) }}%
-              </span>
+        <div v-for="e in studyEntries" :key="e.id" class="card py-3 flex justify-between items-start">
+          <div>
+            <div class="font-medium text-slate-100 text-sm">{{ e.title }}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-xs px-1.5 py-0.5 rounded-full" :class="statusClass(e.status)">{{ e.status }}</span>
+              <span v-if="e.notes" class="text-xs text-slate-500">{{ e.notes }}</span>
             </div>
-            <template v-if="item.total_units">
-              <div class="text-xs text-slate-500 mt-1 mb-1">{{ item.current_unit || 0 }} / {{ item.total_units }}</div>
-              <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                <div class="h-full bg-blue-500 rounded-full transition-all" :style="{ width: progressPct(item) + '%' }"></div>
-              </div>
-            </template>
-            <div v-if="item.notes" class="text-xs text-slate-500 mt-1">{{ item.notes }}</div>
           </div>
-        </template>
+          <button class="text-slate-500 hover:text-slate-300 text-xs ml-2 shrink-0" @click="openEdit(e)">編輯</button>
+        </div>
       </div>
     </div>
+
+    <!-- 今日閱讀 -->
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-semibold text-slate-300">📖 今日閱讀</h2>
+        <button class="text-blue-400 text-xs hover:text-blue-300" @click="openAdd('閱讀')">+ 新增</button>
+      </div>
+      <div v-if="!readEntries.length" class="card py-4 text-center text-slate-500 text-sm">今天還沒有閱讀記錄</div>
+      <div v-else class="space-y-2">
+        <div v-for="e in readEntries" :key="e.id" class="card py-3 flex justify-between items-start">
+          <div>
+            <div class="font-medium text-slate-100 text-sm">{{ e.title }}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-xs px-1.5 py-0.5 rounded-full" :class="statusClass(e.status)">{{ e.status }}</span>
+              <span v-if="e.notes" class="text-xs text-slate-500">{{ e.notes }}</span>
+            </div>
+          </div>
+          <button class="text-slate-500 hover:text-slate-300 text-xs ml-2 shrink-0" @click="openEdit(e)">編輯</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 快速新增 / 編輯 Modal（內嵌於 Dashboard）-->
+    <Teleport to="body">
+      <div v-if="showModal" class="fixed inset-0 bg-black/60 z-50 flex items-end" @click.self="showModal = false">
+        <div class="bg-slate-800 rounded-t-2xl w-full max-h-[80vh] overflow-y-auto p-5">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-white">{{ modalForm.id ? '編輯' : '新增' }}記錄</h2>
+            <button class="text-slate-400 hover:text-white text-2xl leading-none" @click="showModal = false">×</button>
+          </div>
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="label">類別</label>
+                <select v-model="modalForm.category" class="input">
+                  <option>學習</option><option>閱讀</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">狀態</label>
+                <select v-model="modalForm.status" class="input">
+                  <option>進行中</option><option>預覽</option><option>完成</option><option>無</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="label">書名／課程名稱 *</label>
+              <input v-model="modalForm.title" class="input" placeholder="輸入書名或課程名稱" />
+            </div>
+            <div>
+              <label class="label">備註</label>
+              <textarea v-model="modalForm.notes" class="input resize-none text-sm" rows="2" placeholder="心得或備忘…" />
+            </div>
+          </div>
+          <div class="flex gap-3 mt-5">
+            <button class="btn-primary flex-1" :disabled="modalSaving || !modalForm.title" @click="saveModal">
+              {{ modalSaving ? '儲存中…' : '儲存' }}
+            </button>
+            <button v-if="modalForm.id" class="btn-danger text-sm" @click="removeEntry(modalForm)">刪除</button>
+            <button class="btn-secondary" @click="showModal = false">取消</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -108,7 +143,7 @@ import { useLearning } from '../composables/useLearning'
 import { getAchieveLevel } from '../lib/parseTarget'
 
 const { fetchRecord, fetchStreakAndStats } = useRecords()
-const { fetchActiveItems } = useLearning()
+const { fetchEntriesByDate, upsertEntry, deleteEntry } = useLearning()
 
 const today = new Date().toISOString().slice(0, 10)
 const todayLabel = computed(() => {
@@ -118,22 +153,27 @@ const todayLabel = computed(() => {
 })
 
 const loading = ref(true)
-const loadingLearning = ref(true)
 const record = ref(null)
 const streak = ref(0)
-const activeItems = ref([])
+const todayEntries = ref([])
+const showModal = ref(false)
+const modalSaving = ref(false)
+
+const emptyModalForm = (cat) => ({
+  id: null, entry_date: today, title: '', category: cat || '學習', status: '進行中', notes: ''
+})
+const modalForm = ref(emptyModalForm())
 
 onMounted(async () => {
   const [r, s, l] = await Promise.all([
     fetchRecord(today),
     fetchStreakAndStats(),
-    fetchActiveItems(),
+    fetchEntriesByDate(today),
   ])
   record.value = r.data
   streak.value = s.streak
-  activeItems.value = l.data
+  todayEntries.value = l.data
   loading.value = false
-  loadingLearning.value = false
 })
 
 const sortedRecs = computed(() => {
@@ -146,10 +186,7 @@ const sortedRecs = computed(() => {
 const completionRate = computed(() => {
   const recs = sortedRecs.value.filter(r => r.can_do)
   if (!recs.length) return 0
-  const done = recs.filter(r => {
-    const level = getAchieveLevel(r)
-    return level && level !== 'miss'
-  })
+  const done = recs.filter(r => { const l = getAchieveLevel(r); return l && l !== 'miss' })
   return Math.round((done.length / recs.length) * 100)
 })
 
@@ -159,17 +196,47 @@ const rateColor = computed(() => {
   return 'text-red-400'
 })
 
-const groupedItems = computed(() => {
-  const map = {}
-  for (const item of activeItems.value) {
-    if (!map[item.category]) map[item.category] = []
-    map[item.category].push(item)
-  }
-  return map
-})
+const studyEntries = computed(() => todayEntries.value.filter(e => e.category === '學習'))
+const readEntries = computed(() => todayEntries.value.filter(e => e.category === '閱讀'))
 
-function progressPct(item) {
-  if (!item.total_units || !item.current_unit) return 0
-  return Math.min(100, Math.round((item.current_unit / item.total_units) * 100))
+function statusClass(status) {
+  return {
+    '進行中': 'bg-green-900 text-green-300',
+    '預覽':   'bg-yellow-900 text-yellow-300',
+    '完成':   'bg-slate-700 text-slate-300',
+    '無':     'bg-slate-800 text-slate-500',
+  }[status] || 'bg-slate-700 text-slate-400'
+}
+
+function openAdd(cat) {
+  modalForm.value = emptyModalForm(cat)
+  showModal.value = true
+}
+
+function openEdit(entry) {
+  modalForm.value = { ...entry }
+  showModal.value = true
+}
+
+async function saveModal() {
+  if (!modalForm.value.title.trim()) return
+  modalSaving.value = true
+  const { data, error } = await upsertEntry({ ...modalForm.value })
+  modalSaving.value = false
+  if (error) return
+  if (modalForm.value.id) {
+    const idx = todayEntries.value.findIndex(e => e.id === data.id)
+    if (idx !== -1) todayEntries.value[idx] = data
+  } else {
+    todayEntries.value.push(data)
+  }
+  showModal.value = false
+}
+
+async function removeEntry(entry) {
+  if (!confirm(`確定刪除「${entry.title}」？`)) return
+  await deleteEntry(entry.id)
+  todayEntries.value = todayEntries.value.filter(e => e.id !== entry.id)
+  showModal.value = false
 }
 </script>
