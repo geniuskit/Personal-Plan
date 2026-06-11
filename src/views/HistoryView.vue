@@ -145,8 +145,9 @@ async function loadMonthStats(year, month) {
       if (rec.can_do) {
         statMap[name].total++
         const actual = parseFloat(rec.actual_result)
-        const low = parseFloat((rec.low_target || '').replace(/[^0-9.]/g, ''))
-        if (!isNaN(actual) && !isNaN(low) && actual >= low) statMap[name].achieved++
+        const parseT = s => { const v = parseFloat((s || '').replace(/[^0-9.]/g, '')); return isNaN(v) ? null : v }
+        const ref = parseT(rec.low_target) ?? parseT(rec.mid_target) ?? parseT(rec.high_target)
+        if (!isNaN(actual) && ref !== null && actual >= ref) statMap[name].achieved++
       }
     }
   }
