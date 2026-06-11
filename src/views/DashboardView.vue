@@ -162,7 +162,12 @@ import { getAchieveLevel } from '../lib/parseTarget'
 const { fetchRecord, fetchStreakAndStats } = useRecords()
 const { fetchEntriesByDate, upsertEntry, deleteEntry } = useLearning()
 
-const todayStr = new Date().toISOString().slice(0, 10)
+// 用本地時間避免 UTC 時區偏移造成日期跳動
+function localDateStr(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+const todayStr = localDateStr()
 const viewDate = ref(todayStr)
 
 const isToday = computed(() => viewDate.value === todayStr)
@@ -176,7 +181,7 @@ const dateLabel = computed(() => {
 function shiftDate(delta) {
   const d = new Date(viewDate.value + 'T00:00:00')
   d.setDate(d.getDate() + delta)
-  const next = d.toISOString().slice(0, 10)
+  const next = localDateStr(d)          // 用本地格式，不用 toISOString()
   if (next > todayStr) return
   viewDate.value = next
   loadData()
