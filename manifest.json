@@ -1,0 +1,21 @@
+{
+  "name": "每日執行計畫",
+  "short_name": "每日計畫",
+  "description": "追蹤每日學習、運動、閱讀等執行計畫",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
