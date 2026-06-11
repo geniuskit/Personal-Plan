@@ -1,14 +1,31 @@
 <template>
   <div class="max-w-lg mx-auto px-4 pt-6 pb-4">
     <!-- 標題列 -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-xl font-bold text-white">今日計畫</h1>
-        <p class="text-slate-400 text-sm">{{ todayLabel }}</p>
-      </div>
-      <router-link :to="`/edit/${today}`" class="btn-primary text-sm">
+    <div class="flex items-center justify-between mb-2">
+      <h1 class="text-xl font-bold text-white">每日計畫</h1>
+      <router-link :to="`/edit/${viewDate}`" class="btn-primary text-sm">
         {{ record ? '編輯' : '+ 新增' }}
       </router-link>
+    </div>
+
+    <!-- 日期導航 -->
+    <div class="flex items-center justify-between mb-5">
+      <button class="text-slate-400 hover:text-white text-2xl px-2 py-1 leading-none" @click="shiftDate(-1)">‹</button>
+      <div class="text-center">
+        <div class="font-semibold text-slate-100">{{ dateLabel }}</div>
+        <button
+          v-if="!isToday"
+          class="text-xs text-blue-400 hover:underline mt-0.5"
+          @click="goToday"
+        >回到今日</button>
+        <div v-else class="text-xs text-slate-500 mt-0.5">今天</div>
+      </div>
+      <button
+        class="text-2xl px-2 py-1 leading-none transition-colors"
+        :class="isToday ? 'text-slate-700 cursor-not-allowed' : 'text-slate-400 hover:text-white'"
+        :disabled="isToday"
+        @click="shiftDate(1)"
+      >›</button>
     </div>
 
     <!-- 連續天數 + 統計 -->
@@ -35,8 +52,8 @@
     <!-- 無資料 -->
     <div v-else-if="!record" class="card text-center py-8 mb-4">
       <div class="text-4xl mb-3">📝</div>
-      <div class="text-slate-400 mb-4">今天還沒有記錄</div>
-      <router-link :to="`/edit/${today}`" class="btn-primary inline-block">開始記錄今天</router-link>
+      <div class="text-slate-400 mb-4">{{ isToday ? '今天' : '這天' }}還沒有記錄</div>
+      <router-link :to="`/edit/${viewDate}`" class="btn-primary inline-block">開始記錄{{ isToday ? '今天' : '這天' }}</router-link>
     </div>
 
     <!-- 活動卡片列表 -->
@@ -51,7 +68,7 @@
     <!-- 今日學習 -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold text-slate-300">🧠 今日學習</h2>
+        <h2 class="font-semibold text-slate-300">🧠 {{ isToday ? '今日' : dateLabel.slice(5,10) + ' ' }}學習</h2>
         <button class="text-blue-400 text-xs hover:text-blue-300" @click="openAdd('學習')">+ 新增</button>
       </div>
       <div v-if="!studyEntries.length" class="card py-4 text-center text-slate-500 text-sm">今天還沒有學習記錄</div>
@@ -72,7 +89,7 @@
     <!-- 今日閱讀 -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold text-slate-300">📖 今日閱讀</h2>
+        <h2 class="font-semibold text-slate-300">📖 {{ isToday ? '今日' : dateLabel.slice(5,10) + ' ' }}閱讀</h2>
         <button class="text-blue-400 text-xs hover:text-blue-300" @click="openAdd('閱讀')">+ 新增</button>
       </div>
       <div v-if="!readEntries.length" class="card py-4 text-center text-slate-500 text-sm">今天還沒有閱讀記錄</div>
@@ -145,12 +162,30 @@ import { getAchieveLevel } from '../lib/parseTarget'
 const { fetchRecord, fetchStreakAndStats } = useRecords()
 const { fetchEntriesByDate, upsertEntry, deleteEntry } = useLearning()
 
-const today = new Date().toISOString().slice(0, 10)
-const todayLabel = computed(() => {
-  const d = new Date()
+const todayStr = new Date().toISOString().slice(0, 10)
+const viewDate = ref(todayStr)
+
+const isToday = computed(() => viewDate.value === todayStr)
+
+const dateLabel = computed(() => {
+  const d = new Date(viewDate.value + 'T00:00:00')
   const wd = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()]
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 星期${wd}`
 })
+
+function shiftDate(delta) {
+  const d = new Date(viewDate.value + 'T00:00:00')
+  d.setDate(d.getDate() + delta)
+  const next = d.toISOString().slice(0, 10)
+  if (next > todayStr) return
+  viewDate.value = next
+  loadData()
+}
+
+function goToday() {
+  viewDate.value = todayStr
+  loadData()
+}
 
 const loading = ref(true)
 const record = ref(null)
@@ -160,20 +195,24 @@ const showModal = ref(false)
 const modalSaving = ref(false)
 
 const emptyModalForm = (cat) => ({
-  id: null, entry_date: today, title: '', category: cat || '學習', status: '進行中', notes: ''
+  id: null, entry_date: viewDate.value, title: '', category: cat || '學習', status: '進行中', notes: ''
 })
 const modalForm = ref(emptyModalForm())
 
-onMounted(async () => {
-  const [r, s, l] = await Promise.all([
-    fetchRecord(today),
-    fetchStreakAndStats(),
-    fetchEntriesByDate(today),
+async function loadData() {
+  loading.value = true
+  const [r, l] = await Promise.all([
+    fetchRecord(viewDate.value),
+    fetchEntriesByDate(viewDate.value),
   ])
   record.value = r.data
-  streak.value = s.streak
   todayEntries.value = l.data
   loading.value = false
+}
+
+onMounted(async () => {
+  const [, s] = await Promise.all([loadData(), fetchStreakAndStats()])
+  streak.value = s.streak
 })
 
 const sortedRecs = computed(() => {
@@ -209,7 +248,7 @@ function statusClass(status) {
 }
 
 function openAdd(cat) {
-  modalForm.value = emptyModalForm(cat)
+  modalForm.value = { ...emptyModalForm(cat), entry_date: viewDate.value }
   showModal.value = true
 }
 
