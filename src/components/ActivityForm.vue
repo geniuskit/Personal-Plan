@@ -15,6 +15,14 @@
       </div>
     </div>
 
+    <!-- 不能做時顯示 x 提示 -->
+    <div v-if="modelValue.can_do === false" class="grid grid-cols-4 gap-2 text-xs text-center text-slate-500 border border-slate-700 rounded-lg py-2">
+      <div><div class="label">高標</div><div class="font-medium">x</div></div>
+      <div><div class="label">中標</div><div class="font-medium">x</div></div>
+      <div><div class="label">低標</div><div class="font-medium">x</div></div>
+      <div><div class="label">實際達成</div><div class="font-medium">x</div></div>
+    </div>
+
     <template v-if="modelValue.can_do">
       <div class="grid grid-cols-3 gap-2">
         <div>

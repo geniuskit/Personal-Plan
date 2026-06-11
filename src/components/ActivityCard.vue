@@ -10,23 +10,29 @@
         </span>
         <span class="font-semibold text-slate-100">{{ rec.activity_templates?.name }}</span>
       </div>
-      <span v-if="rec.actual_result" class="text-sm font-bold" :class="achieveColor">
-        {{ rec.actual_result }} {{ rec.unit }}
+      <span class="text-sm font-bold" :class="rec.can_do ? achieveColor : 'text-slate-500'">
+        {{ rec.can_do ? (rec.actual_result ? rec.actual_result + ' ' + rec.unit : '') : 'x' }}
       </span>
     </div>
 
-    <div v-if="rec.can_do" class="grid grid-cols-3 gap-2 text-xs mb-3">
+    <div class="grid grid-cols-3 gap-2 text-xs mb-3">
       <div class="text-center">
         <div class="label">高標</div>
-        <div class="text-green-400 font-medium">{{ rec.high_target || '—' }}</div>
+        <div :class="rec.can_do ? 'text-green-400' : 'text-slate-500'" class="font-medium">
+          {{ rec.can_do ? (rec.high_target || '—') : 'x' }}
+        </div>
       </div>
       <div class="text-center">
         <div class="label">中標</div>
-        <div class="text-yellow-400 font-medium">{{ rec.mid_target || '—' }}</div>
+        <div :class="rec.can_do ? 'text-yellow-400' : 'text-slate-500'" class="font-medium">
+          {{ rec.can_do ? (rec.mid_target || '—') : 'x' }}
+        </div>
       </div>
       <div class="text-center">
         <div class="label">低標</div>
-        <div class="text-red-400 font-medium">{{ rec.low_target || '—' }}</div>
+        <div :class="rec.can_do ? 'text-red-400' : 'text-slate-500'" class="font-medium">
+          {{ rec.can_do ? (rec.low_target || '—') : 'x' }}
+        </div>
       </div>
     </div>
 
