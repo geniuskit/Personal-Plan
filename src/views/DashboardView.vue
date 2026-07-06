@@ -68,7 +68,7 @@
     <!-- 今日學習 -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold text-slate-300">🧠 {{ isToday ? '今日' : dateLabel.slice(5,10) + ' ' }}學習</h2>
+        <h2 class="font-semibold text-slate-300">🧠 {{ isToday ? '今日' : monthDay + ' ' }}學習</h2>
         <button class="text-blue-400 text-xs hover:text-blue-300" @click="openAdd('學習')">+ 新增</button>
       </div>
       <div v-if="!studyEntries.length" class="card py-4 text-center text-slate-500 text-sm">今天還沒有學習記錄</div>
@@ -89,7 +89,7 @@
     <!-- 今日閱讀 -->
     <div class="mb-4">
       <div class="flex items-center justify-between mb-2">
-        <h2 class="font-semibold text-slate-300">📖 {{ isToday ? '今日' : dateLabel.slice(5,10) + ' ' }}閱讀</h2>
+        <h2 class="font-semibold text-slate-300">📖 {{ isToday ? '今日' : monthDay + ' ' }}閱讀</h2>
         <button class="text-blue-400 text-xs hover:text-blue-300" @click="openAdd('閱讀')">+ 新增</button>
       </div>
       <div v-if="!readEntries.length" class="card py-4 text-center text-slate-500 text-sm">今天還沒有閱讀記錄</div>
@@ -176,6 +176,12 @@ const dateLabel = computed(() => {
   const d = new Date(viewDate.value + 'T00:00:00')
   const wd = ['日', '一', '二', '三', '四', '五', '六'][d.getDay()]
   return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()} 星期${wd}`
+})
+
+// 僅取 M/D，不用 slice 避免位數不一致問題
+const monthDay = computed(() => {
+  const d = new Date(viewDate.value + 'T00:00:00')
+  return `${d.getMonth() + 1}/${d.getDate()}`
 })
 
 function shiftDate(delta) {
