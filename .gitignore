@@ -2,3 +2,7 @@ node_modules
 dist
 .env
 .env.local
+
+# 本機保留、不上傳的相關檔案
+其他相關檔案/
+~$*
