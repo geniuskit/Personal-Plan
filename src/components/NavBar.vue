@@ -22,6 +22,7 @@ const items = [
   { to: `/edit/${today()}`, icon: '✏️', label: '記錄' },
   { to: '/history', icon: '📅', label: '歷史' },
   { to: '/learning', icon: '📚', label: '書單' },
+  { to: '/pm', icon: '🎯', label: '專案' },
   { to: '/settings', icon: '⚙️', label: '設定' },
 ]
 
@@ -31,6 +32,7 @@ function today() {
 
 function isActive(item) {
   if (item.to.startsWith('/edit/')) return route.path.startsWith('/edit/')
+  if (item.to === '/pm') return route.path.startsWith('/pm')
   return route.path === item.to
 }
 </script>

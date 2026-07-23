@@ -2,34 +2,170 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   淡藍海洋・玻璃質感主題（Ocean Glassmorphism）
+   透過重新定義元件類別 + 覆寫常用 utility，一次套用到全站。
+   ============================================================ */
+:root {
+  color-scheme: light;
+
+  --ink:      #0e3350;  /* 主要文字（原 text-white / slate-100/200） */
+  --ink-2:    #305874;  /* 次要文字（slate-300） */
+  --muted:    #4f7691;  /* slate-400 */
+  --muted-2:  #6b8aa3;  /* slate-500/600 */
+
+  --glass-strong: rgba(255, 255, 255, 0.60);
+  --glass:        rgba(255, 255, 255, 0.48);
+  --glass-soft:   rgba(255, 255, 255, 0.38);
+  --glass-line:   rgba(255, 255, 255, 0.75);
+
+  --border:   rgba(3, 105, 161, 0.24);
+  --border-2: rgba(3, 105, 161, 0.14);
+
+  --accent:        #0ea5e9;
+  --accent-strong: #0369a1;
+}
+
 @layer base {
   html, body {
-    @apply bg-slate-900 text-slate-100 min-h-screen;
+    @apply min-h-screen;
+    color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-tap-highlight-color: transparent;
+    background:
+      radial-gradient(1200px 620px at 12% -12%, rgba(125, 211, 252, 0.55), transparent 60%),
+      radial-gradient(1000px 720px at 112% 6%, rgba(165, 243, 252, 0.45), transparent 55%),
+      linear-gradient(160deg, #ecf8ff 0%, #d9edfb 48%, #c7e6f6 100%);
+    background-attachment: fixed;
   }
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
+  ::placeholder { color: var(--muted-2); opacity: 1; }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors;
+    @apply font-medium px-4 py-2 rounded-lg transition-colors;
+    color: #075985;
+    background: rgba(125, 211, 252, 0.26);
+    border: 1px solid rgba(14, 165, 233, 0.38);
+    backdrop-filter: blur(6px);
   }
+  .btn-primary:hover {
+    background: rgba(56, 189, 248, 0.42);
+    border-color: rgba(2, 132, 199, 0.5);
+    color: #0c4a6e;
+  }
+  .btn-primary:active { background: rgba(56, 189, 248, 0.52); }
+  .btn-primary:disabled { opacity: 0.45; }
+
   .btn-secondary {
-    @apply bg-slate-700 hover:bg-slate-600 active:bg-slate-800 text-slate-100 font-medium px-4 py-2 rounded-lg transition-colors;
+    @apply font-medium px-4 py-2 rounded-lg transition-colors;
+    color: var(--ink);
+    background: var(--glass-strong);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(8px);
   }
+  .btn-secondary:hover { background: rgba(255, 255, 255, 0.8); }
+
   .btn-danger {
-    @apply bg-red-700 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors;
+    @apply font-medium px-4 py-2 rounded-lg transition-colors;
+    color: #b91c1c;
+    background: rgba(252, 165, 165, 0.24);
+    border: 1px solid rgba(239, 68, 68, 0.34);
+    backdrop-filter: blur(6px);
   }
+  .btn-danger:hover {
+    background: rgba(248, 113, 113, 0.42);
+    border-color: rgba(220, 38, 38, 0.5);
+    color: #991b1b;
+  }
+
   .card {
-    @apply bg-slate-800 rounded-xl p-4;
+    background: var(--glass-strong);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid var(--glass-line);
+    box-shadow: 0 10px 30px -16px rgba(20, 100, 150, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    border-radius: 0.95rem;
+    padding: 1rem;
   }
+
   .input {
-    @apply bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 w-full focus:outline-none focus:border-blue-500 transition-colors;
+    @apply rounded-lg px-3 py-2 w-full transition-colors;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.66);
+    border: 1px solid var(--border);
   }
-  .label {
-    @apply text-slate-400 text-xs mb-1 block;
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.18);
   }
+
+  .label { @apply text-xs mb-1 block; color: var(--muted); }
 }
+
+/* ============================================================
+   Utility 覆寫（未分層 → 優先權高於 Tailwind 的 utilities 層）
+   把既有 slate 深色系整批換成淡藍玻璃。
+   ============================================================ */
+
+/* 頁面底 / 卡片 / 輸入底 / 覆蓋層 */
+.bg-slate-900 { background-color: transparent; }
+.bg-slate-800 {
+  background-color: var(--glass-strong);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.bg-slate-800\/50 { background-color: var(--glass-soft); }
+.bg-slate-700    { background-color: rgba(255, 255, 255, 0.52); }
+.bg-slate-700\/50 { background-color: rgba(255, 255, 255, 0.42); }
+.bg-slate-600    { background-color: rgba(255, 255, 255, 0.68); }
+.bg-black\/60, .bg-black\/50, .bg-black {
+  background-color: rgba(10, 42, 66, 0.34);
+  backdrop-filter: blur(3px);
+}
+
+/* 文字色 */
+.text-white,
+.text-slate-100,
+.text-slate-200 { color: var(--ink); }
+.text-slate-300 { color: var(--ink-2); }
+.text-slate-400 { color: var(--muted); }
+.text-slate-500,
+.text-slate-600,
+.text-slate-700 { color: var(--muted-2); }
+
+/* 保留有色實心按鈕／膠囊上的白字（複合選擇器優先權較高） */
+.bg-blue-600.text-white,
+.bg-blue-500.text-white,
+.bg-green-600.text-white,
+.bg-red-700.text-white,
+.bg-red-600.text-white { color: #ffffff; }
+
+/* 狀態徽章：深底 → 淡彩玻璃 */
+.bg-green-900  { background-color: rgba(16, 185, 129, 0.16); }
+.bg-yellow-900 { background-color: rgba(202, 138, 4, 0.16); }
+.bg-blue-900   { background-color: rgba(37, 99, 235, 0.14); }
+.bg-red-900    { background-color: rgba(239, 68, 68, 0.14); }
+.bg-purple-900 { background-color: rgba(147, 51, 234, 0.15); }
+.text-green-300, .text-emerald-300 { color: #047857; }
+.text-yellow-300 { color: #a16207; }
+.text-blue-300  { color: #1d4ed8; }
+.text-blue-400  { color: #2563eb; }
+.text-red-300, .text-red-400 { color: #dc2626; }
+.text-purple-300 { color: #7e22ce; }
+
+/* 邊框 */
+.border-slate-600 { border-color: var(--border); }
+.border-slate-700 { border-color: var(--border-2); }
+.border-slate-800 { border-color: var(--border-2); }
+
+/* hover 狀態 */
+.hover\:bg-slate-700:hover    { background-color: rgba(3, 105, 161, 0.10); }
+.hover\:bg-slate-600:hover    { background-color: rgba(3, 105, 161, 0.12); }
+.hover\:bg-slate-800\/50:hover { background-color: rgba(3, 105, 161, 0.06); }
+.hover\:text-white:hover      { color: var(--accent-strong); }
+.hover\:text-blue-300:hover   { color: #1d4ed8; }
+.hover\:text-red-300:hover    { color: #b91c1c; }
