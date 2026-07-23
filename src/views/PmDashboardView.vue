@@ -2,7 +2,7 @@
   <div class="pb-4">
     <PmSubNav />
     <div class="max-w-3xl mx-auto px-4 pt-2">
-      <h1 class="text-xl font-bold text-white mb-4">🎯 專案總覽<span class="text-sm font-normal text-slate-500 ml-2">（僅顯示進行中）</span></h1>
+      <h1 class="text-xl font-bold text-white mb-4">🎯 專案總覽<span class="text-sm font-normal text-slate-500 ml-2">（進行中專案）</span></h1>
 
       <div v-if="loading" class="text-slate-400 text-center py-10">載入中…</div>
 
