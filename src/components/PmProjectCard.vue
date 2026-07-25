@@ -2,7 +2,7 @@
   <div class="card">
     <!-- 標題列 -->
     <div class="flex items-start gap-2">
-      <button class="text-slate-400 hover:text-white text-lg leading-none mt-0.5 w-5" @click="toggle">
+      <button class="text-slate-400 text-lg leading-none mt-0.5 w-5" @click="toggle">
         {{ expanded ? '−' : '+' }}
       </button>
       <div class="flex-1 min-w-0">
