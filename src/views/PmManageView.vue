@@ -18,7 +18,7 @@
           <div v-if="grp.projects.length" class="space-y-2">
             <div v-for="p in grp.projects" :key="p.id" class="card">
               <div class="flex items-start gap-2">
-                <button class="text-slate-400 hover:text-white text-lg leading-none mt-0.5 w-5" @click="toggleReviews(p)">
+                <button class="text-slate-400 text-lg leading-none mt-0.5 w-5" @click="toggleReviews(p)">
                   {{ openProject === p.id ? '−' : '+' }}
                 </button>
                 <div class="flex-1 min-w-0">
